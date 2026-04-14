@@ -9,9 +9,11 @@
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.user
 *.userprefs
 *.pidb
 *.booproj
 .vs/
+.vscode/
