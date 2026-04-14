@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("ƒqƒbƒg")]
+    [Header("ãƒ’ãƒƒãƒˆ")]
     [SerializeField] CharData data_hit;
-    [Header("ƒXƒ‰ƒbƒVƒ…")]
+    [Header("ã‚¹ãƒ©ãƒƒã‚·ãƒ¥")]
     [SerializeField] CharData data_slash;
 
     public CharacterManager manager_Hit {  get; private set; }
