@@ -17,3 +17,5 @@
 .vs/
 *.slnx
 .vscode/
+*.asset
+*.dwlt
