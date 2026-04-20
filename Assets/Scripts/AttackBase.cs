@@ -1,29 +1,46 @@
+using System;
 using UnityEngine;
 
-// 攻撃のひな形クラス。個別の攻撃はこれを継承して実装する
-public abstract class AttackBase : MonoBehaviour
+// 攻撃の種別: ヒット専用 or スラッシュ専用
+public enum AttackCategory { Hit, Slash }
+
+// 攻撃のひな形クラス。個別攻撃はこれを継承して実装する
+public abstract class AttackBase : ScriptableObject
 {
-    [SerializeField] protected string attackName = "(attack)";
-    [SerializeField] protected float power = 1f;
-    [SerializeField] protected float cooldown = 0f;
+    [SerializeField] int id;
+    [SerializeField] AttackCategory category;
+    [SerializeField] string attackName = "(attack)";
+    [SerializeField] float basePower = 1f;
 
-    float lastExecutedTime = -Mathf.Infinity;
+    // 共通エフェクト/SE。Inspectorで直接アセット参照する
+    [SerializeField] protected GameObject hitEffectPrefab;
+    [SerializeField] protected AudioClip hitSe;
 
+    public int Id => id;
+    public AttackCategory Category => category;
     public string AttackName => attackName;
-    public float Power => power;
-    public float Cooldown => cooldown;
+    public float BasePower => basePower;
 
-    // 実行可能か（クールダウン中でないか）
-    public bool IsReady => Time.time - lastExecutedTime >= cooldown;
+    // 共通イベント。攻撃固有のイベントは派生クラス側で追加定義する
+    public event Action<AttackBase> OnAttackStart;
+    public event Action<AttackBase, float> OnDamageDealt;
+    public event Action<AttackBase> OnAttackEnd;
 
-    // 外部からはこれを呼ぶ。クールダウン判定を共通化し、本体は派生クラスに委ねる
-    public bool TryExecute() {
-        if (!IsReady) return false;
-        lastExecutedTime = Time.time;
-        OnExecute();
-        return true;
+    // 攻撃実行のエントリポイント
+    public void Execute(CharData attacker) {
+        OnAttackStart?.Invoke(this);
+        float damage = CalculateDamage(attacker);
+        OnExecute(attacker, damage);
+        OnDamageDealt?.Invoke(this, damage);
+        OnAttackEnd?.Invoke(this);
     }
 
-    // 派生クラスで個別攻撃の挙動を実装する
-    protected abstract void OnExecute();
+    // ダメージ計算。Hitは筋力依存、Slashは感性依存。必要なら派生でoverride
+    protected virtual float CalculateDamage(CharData attacker) {
+        float stat = category == AttackCategory.Hit ? attacker.strength : attacker.sense;
+        return basePower * (1f + stat);
+    }
+
+    // 派生クラスで個別攻撃の挙動を実装
+    protected abstract void OnExecute(CharData attacker, float damage);
 }
